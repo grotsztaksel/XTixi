@@ -153,6 +153,12 @@ class TestExpandedTixi(unittest.TestCase):
                          self.tixi.getInheritedTextAttribute("/root/child_2[1]/child_2[1]/node_3[1]/node_4[1]", "attr"))
         self.assertIsNone(self.tixi.getInheritedTextAttribute("/root/child_1/child", "attr"))
 
+    def test_clearComments(self):
+        self.assertEqual("#comment", self.tixi.getChildNodeName("/root/child_2[1]/child_2[1]/node_3[1]", 2))
+        self.tixi.clearComments()
+        self.assertNotEqual("#comment", self.tixi.getChildNodeName("/root/child_2[1]/child_2[1]/node_3[1]", 2))
+        self.assertEqual([], self.tixi.xPathExpressionGetAllXPaths("//comment()"))
+
 
 if __name__ == '__main__':
     unittest.main()
