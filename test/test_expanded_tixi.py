@@ -93,6 +93,30 @@ class TestExpandedTixi(unittest.TestCase):
         self.assertEqual('node_4', self.tixi.elementName('/root/child_2[1]/child_2[1]/node_3[1]/node_4[1]'))
         self.assertEqual('child_2', self.tixi.elementName('/root/child_2[2]'))
 
+    def test_createElement(self):
+        path = self.tixi.createElement("/root/child_2[1]", "node_9")
+        self.assertEqual("/root/child_2[1]/node_9", path)
+        self.assertTrue(self.tixi.checkElement("/root/child_2[1]/node_9"))
+
+    def test_addTextElement(self):
+        path = self.tixi.addTextElement("/root/child_2[1]", "node_9", "text of the node")
+        self.assertEqual("/root/child_2[1]/node_9", path)
+        self.assertTrue(self.tixi.checkElement("/root/child_2[1]/node_9"))
+        self.assertEqual("text of the node", self.tixi.getTextElement(path))
+
+    def test_createElementAtIndex(self):
+        path = self.tixi.createElementAtIndex("/root/child_2[1]", "node_9", 2)
+        self.assertEqual("/root/child_2[1]/node_9", path)
+        self.assertTrue(self.tixi.checkElement("/root/child_2[1]/node_9"))
+        self.assertEqual("node_9", self.tixi.getChildNodeName("/root/child_2[1]", 2))
+
+    def test_addTextElementAtIndex(self):
+        path = self.tixi.addTextElementAtIndex("/root/child_2[1]", "node_9", "text of the node", 2)
+        self.assertEqual("/root/child_2[1]/node_9", path)
+        self.assertTrue(self.tixi.checkElement("/root/child_2[1]/node_9"))
+        self.assertEqual("text of the node", self.tixi.getTextElement(path))
+        self.assertEqual("node_9", self.tixi.getChildNodeName("/root/child_2[1]", 2))
+
     def test_uniqueElementName(self):
         self.assertEqual('node_4[1]', self.tixi.uniqueElementName('/root/child_2[1]/child_2[1]/node_3[1]/node_4[1]'))
         self.assertEqual('node_3[1]', self.tixi.uniqueElementName('/root/child_2[1]/node_3[1]'))

@@ -69,6 +69,45 @@ class ExpandedTixi(Tixi3):
         """Return the sequential number of the given element in its parent's tree"""
         return self.xPathExpressionGetAllXPaths(self.parent(xmlPath) + "/*").index(xmlPath) + 1
 
+    def createElement(self, xmlPath, elementName) -> str:
+        """Create an element and return its path"""
+        super().createElement(xmlPath, elementName)
+        return self.xPathExpressionGetAllXPaths("{}/{}".format(xmlPath, elementName))[-1]
+
+    def createElementAtIndex(self, xmlPath, elementName, index) -> str:
+        """Create an element at given index and return its path"""
+        super().createElementAtIndex(xmlPath, elementName, index)
+        n = 0
+        for i in range(index):
+            if self.getChildNodeName(xmlPath, i + 1) == elementName:
+                n += 1
+        return "{}/{}[{}]".format(xmlPath, elementName, n)
+
+    def createElementNS(self, xmlPath, elementName, uri) -> str:
+        """Create an element using namespace and return its path"""
+        super().createElementNS(xmlPath, elementName, uri)
+        return self.xPathExpressionGetAllXPaths("{}/*".format(xmlPath))[-1]
+
+    def createElementNSAtIndex(self, xmlPath, elementName, index, uri) -> str:
+        """Create an element at given index using namespace and return its path"""
+        super().createElementNSAtIndex(xmlPath, elementName, index, uri)
+        newElementName = "{}:{}".format(uri, elementName)
+        n = 0
+        for i in range(index):
+            if self.getChildNodeName(xmlPath, i + 1) == newElementName:
+                n += 1
+        return "{}/{}[{}]".format(xmlPath, newElementName, n)
+
+    def addTextElement(self, xmlPath, elementName, text) -> str:
+        """Create a text element and return its path"""
+        super().addTextElement(xmlPath, elementName, text)
+        return self.xPathExpressionGetAllXPaths("{}/{}".format(xmlPath, elementName))[-1]
+
+    def addTextElementAtIndex(self, xmlPath, elementName, text, index) -> str:
+        """Create a text element and return its path"""
+        super().addTextElementAtIndex(xmlPath, elementName, text, index)
+        return self.xPathExpressionGetXPath(xmlPath + "/*", index)
+
     def findInheritedAttribute(self, xmlPath, attrName) -> typing.Union[str, None]:
         """Find the "youngest" parent - or self that has the required attribute and return its path.
            If none of the parent elements has the required attribute, return empty string
