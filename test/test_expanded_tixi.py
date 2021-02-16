@@ -102,6 +102,58 @@ class TestExpandedTixi(unittest.TestCase):
         self.assertEqual("/root/child_2[1]/node_9", path)
         self.assertTrue(self.tixi.checkElement("/root/child_2[1]/node_9"))
 
+    def test_getUnknownNSelementPath(self):
+        path = "/root/child_2[2]/node_3/node_4[2]"
+        self.assertEqual("/*[1]/*[3]/*[1]/*[2]", self.tixi.getUnknownNSelementPath(path))
+
+        # and now create some elements in namespaces
+
+        uri1 = "www/test_uri1.html"
+        uri2 = "www/test_uri2.html"
+        uri3 = "www/test_uri2.html"
+
+        self.tixi.registerNamespace(uri1, "u1")
+        self.tixi.registerNamespace(uri2, "u2")
+        self.tixi.registerNamespace(uri3, "u3")
+
+        self.tixi.createElementNS("/root/child_2[1]/child_2[1]", "element_uri1", uri1)
+        path = "/root/child_2[1]/child_2[1]/element_uri1"
+        self.assertEqual("/*[1]/*[2]/*[1]/*[3]", self.tixi.getUnknownNSelementPath(path))
+
+        self.tixi.createElementNS("/root/child_2[1]/child_2/node_3[1]", "element_uri2", uri2)
+        # Comment node should be ignored
+        path = "/root/child_2[1]/child_2[1]/node_3[1]/element_uri2"
+        self.assertEqual("/*[1]/*[2]/*[1]/*[1]/*[5]", self.tixi.getUnknownNSelementPath(path))
+
+        path = "/root/child_2[1]/child_2[1]/node_3[1]/node_4[3]"
+
+        xmlPath = self.tixi.getUnknownNSelementPath(path)
+        self.assertEqual("/*[1]/*[2]/*[1]/*[1]/*[4]", xmlPath)
+
+        # is the path even useful?
+        text = self.tixi.getTextElement(xmlPath)
+        self.assertIn("Text", text)
+
+        # Now trigger errors:
+
+        try:
+            path = self.tixi.getUnknownNSelementPath("/root/child_2[1]/child_2[1]/node_3[5]")
+            self.assertFalse(True, "Should have thrown TixiException!")
+        except Tixi3Exception as e:
+            self.assertEqual(ReturnCode.ELEMENT_NOT_FOUND, e.code)
+
+        try:
+            path = self.tixi.getUnknownNSelementPath("/root/child_2/child_2[1]/node_3[5]")
+            self.assertFalse(True, "Should have thrown TixiException!")
+        except Tixi3Exception as e:
+            self.assertEqual(ReturnCode.ELEMENT_PATH_NOT_UNIQUE, e.code)
+
+        try:
+            path = self.tixi.getUnknownNSelementPath("blah!")
+            self.assertFalse(True, "Should have thrown TixiException!")
+        except Tixi3Exception as e:
+            self.assertEqual(ReturnCode.INVALID_XPATH, e.code)
+
     def test_addTextElement(self):
         path = self.tixi.addTextElement("/root/child_2[1]", "node_9", "text of the node")
         self.assertEqual("/root/child_2[1]/node_9", path)

@@ -109,6 +109,63 @@ class ExpandedTixi(Tixi3):
         super().createElementNSAtIndex(xmlPath, elementName, index, uri)
         return self.xPathExpressionGetXPath(xmlPath + "/*", index)
 
+    def getUnknownNSelementPath(self, path, processed_path=None, elements=None):
+        """ Carve the way down to an element, without knowing the namespace URI or having the namespace
+        registered/declared.
+        Comment elements are ignored and do not influence the index
+        This is a recursive function
+        :return: xPath in the form "/*[3]/*[1]/*[1]/*[2]
+        """
+        if elements is None:
+            if "/" not in path:
+                raise Tixi3Exception(ReturnCode.INVALID_XPATH, path)
+            # The first element would be an empty string, as the path starts with "/"
+            elements = path.split("/")[1:]
+
+
+        elif elements == []:
+            # previous recursion has already found the right element
+            return processed_path
+        if processed_path is None:
+            processed_path = "/"
+
+        nextChild = elements[0]
+        nextChildName = ExpandedTixi.elementName("/" + nextChild)
+        nextChildNumber = ExpandedTixi.elementNumber("/" + nextChild)
+
+        # For non-unique names, need to loop through all children to make sure the count is equal 1
+        isNameUnique = nextChildName != nextChild
+
+        childOccurrences = 0
+        commentsFound = 0
+        elementFound = False
+        for i in range(1, self.getNumberOfChilds(processed_path) + 1):
+            childName = self.getChildNodeName(processed_path, i)
+            if childName == "#comment":
+                commentsFound += 1
+            if childName != nextChildName:
+                continue
+
+            childOccurrences += 1
+
+            elementFound = True
+            I = i - commentsFound
+
+            if not isNameUnique and childOccurrences > 1:
+                raise Tixi3Exception(ReturnCode.ELEMENT_PATH_NOT_UNIQUE, path)
+
+            if isNameUnique and childOccurrences == nextChildNumber:
+                break
+
+        if not elementFound or childOccurrences != nextChildNumber:
+            raise Tixi3Exception(ReturnCode.ELEMENT_NOT_FOUND, path)
+
+        if processed_path == "/":
+            processed_path = ""
+        processed_path = "{}/*[{}]".format(processed_path, I)
+        return self.getUnknownNSelementPath(path, processed_path, elements[1:])
+
+    #
     def addTextElement(self, xmlPath, elementName, text) -> str:
         """Create a text element and return its path"""
         super().addTextElement(xmlPath, elementName, text)
