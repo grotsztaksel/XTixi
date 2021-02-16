@@ -68,3 +68,37 @@ class ExpandedTixi(Tixi3):
     def elementRow(self, xmlPath):
         """Return the sequential number of the given element in its parent's tree"""
         return self.xPathExpressionGetAllXPaths(self.parent(xmlPath) + "/*").index(xmlPath) + 1
+
+    def findInheritedAttribute(self, xmlPath, attrName) -> typing.Union[str, None]:
+        """Find the "youngest" parent - or self that has the required attribute and return its path.
+           If none of the parent elements has the required attribute, return empty string
+        """
+
+        if self.checkAttribute(xmlPath, attrName):
+            return xmlPath
+
+        path = xmlPath
+        while path and not self.checkAttribute(path, attrName):
+            path = self.parent(path)
+        if not path:
+            return None
+        return path
+
+        # XPath approach does not return expected results. A bug in Tixi3?
+        xpath = "{}[ancestor-or-self::*[@{}]]".format(xmlPath, attrName)
+        try:
+            return self.xPathExpressionGetXPath(xpath, 1)
+        except Tixi3Exception as e:
+            if e.code != ReturnCode.FAILED:
+                raise e
+            return None
+
+    def getInheritedTextAttribute(self, xmlPath, attrName) -> typing.Union[str, None]:
+        """Find the "youngest" parent - or self that has the required attribute and return the attribute value
+           If none of the parent elements has the required attribute, return None
+        """
+        path = self.findInheritedAttribute(xmlPath, attrName)
+
+        if path:
+            return self.getTextAttribute(path, attrName)
+        return None

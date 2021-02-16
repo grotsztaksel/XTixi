@@ -111,6 +111,24 @@ class TestExpandedTixi(unittest.TestCase):
         self.assertEqual(3, self.tixi.elementRow('/root/child_2[1]/child_2[1]/node_3[1]/node_5'))
         self.assertEqual(3, self.tixi.elementRow('/root/child_2[2]'))
 
+    def test_findInheritedAttribute(self):
+        self.assertEqual("/root/child_2[1]/child_2[1]/node_3[1]/node_4[2]",
+                         self.tixi.findInheritedAttribute("/root/child_2[1]/child_2[1]/node_3[1]/node_4[2]", "attr"))
+        self.assertEqual("/root/child_2[1]",
+                         self.tixi.findInheritedAttribute("/root/child_2[1]/node_3/node_4", "attr"))
+        self.assertEqual("/root/child_2[1]/child_2[1]",
+                         self.tixi.findInheritedAttribute("/root/child_2[1]/child_2[1]/node_3[1]/node_4[1]", "attr"))
+        self.assertIsNone(self.tixi.findInheritedAttribute("/root/child_1/child", "attr"))
+
+    def test_getInheritedTextAttribute(self):
+        self.assertEqual("good",
+                         self.tixi.getInheritedTextAttribute("/root/child_2[1]/child_2[1]/node_3[1]/node_4[2]", "attr"))
+        self.assertEqual("foo",
+                         self.tixi.getInheritedTextAttribute("/root/child_2[1]/node_3/node_4", "attr"))
+        self.assertEqual("9",
+                         self.tixi.getInheritedTextAttribute("/root/child_2[1]/child_2[1]/node_3[1]/node_4[1]", "attr"))
+        self.assertIsNone(self.tixi.getInheritedTextAttribute("/root/child_1/child", "attr"))
+
 
 if __name__ == '__main__':
     unittest.main()
