@@ -114,6 +114,18 @@ class TestExpandedTixi(unittest.TestCase):
         self.assertTrue(self.tixi.checkElement("/root/child_2[1]/node_9"))
         self.assertEqual("node_9", self.tixi.getChildNodeName("/root/child_2[1]", 2))
 
+    def test_createElementNS(self):
+        uri = "http://www.testtixi.uri"
+
+        path = self.tixi.createElementNS("/root/child_2[2]/node_3", "new", uri)
+        self.assertEqual('/root/child_2[2]/node_3/*[4]', path)
+
+    def test_createElementNSAtIndex(self):
+        uri = "http://www.testtixi.uri"
+        self.tixi.registerNamespace(uri, "tu")
+        path = self.tixi.createElementNSAtIndex("/root/child_2[2]/node_3", "new", 2, uri)
+        self.assertEqual("/root/child_2[2]/node_3/*[2]", path)
+
     def test_addTextElementAtIndex(self):
         path = self.tixi.addTextElementAtIndex("/root/child_2[1]", "node_9", "text of the node", 2)
         self.assertEqual("/root/child_2[1]/node_9", path)

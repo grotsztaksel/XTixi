@@ -98,8 +98,9 @@ class ExpandedTixi(Tixi3):
         super().createElementAtIndex(xmlPath, elementName, index)
         return self.xPathExpressionGetXPath(xmlPath + "/*", index)
 
-    def createElementNS(self, xmlPath, elementName, uri) -> str:
-        """Create an element using namespace and return its path"""
+    #
+    def createElementNS(self, xmlPath, elementName, uri, prefix=None) -> str:
+        """Create an element using namespace and return its path, if a prefix is known"""
         super().createElementNS(xmlPath, elementName, uri)
         return self.xPathExpressionGetAllXPaths("{}/*".format(xmlPath))[-1]
 
