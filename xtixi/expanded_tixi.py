@@ -29,6 +29,7 @@ class ExpandedTixi(Tixi3):
     def __init__(self):
         super(ExpandedTixi, self).__init__()
 
+    #
     def xPathEvaluateNodeNumber(self, xPathExpr) -> int:
         """Return the number of paths to which the XPath resolves"""
         try:
@@ -44,19 +45,23 @@ class ExpandedTixi(Tixi3):
         return [self.xPathExpressionGetXPath(xPathExpr, i + 1) for i in
                 range(self.xPathEvaluateNodeNumber(xPathExpr))]
 
+    #
     @staticmethod
     def parent(xmlPath):
         """Return the parent of the input xmlPath"""
         return xmlPath.rsplit("/", 1)[0]
 
+    #
     @staticmethod
     def elementName(xmlPath):
         return ExpandedTixi.uniqueElementName(xmlPath).split("[")[0]
 
+    #
     @staticmethod
     def uniqueElementName(xmlPath):
         return xmlPath.rsplit("/", 1)[1]
 
+    #
     @staticmethod
     def elementNumber(xmlPath):
         elementNumberString = ExpandedTixi.uniqueElementName(xmlPath).split("[")
@@ -65,6 +70,7 @@ class ExpandedTixi(Tixi3):
         else:
             return 1
 
+    #
     def elementRow(self, xmlPath):
         """Return the sequential number of the given element in its parent's tree"""
         return self.xPathExpressionGetAllXPaths(self.parent(xmlPath) + "/*").index(xmlPath) + 1
@@ -77,11 +83,7 @@ class ExpandedTixi(Tixi3):
     def createElementAtIndex(self, xmlPath, elementName, index) -> str:
         """Create an element at given index and return its path"""
         super().createElementAtIndex(xmlPath, elementName, index)
-        n = 0
-        for i in range(index):
-            if self.getChildNodeName(xmlPath, i + 1) == elementName:
-                n += 1
-        return "{}/{}[{}]".format(xmlPath, elementName, n)
+        return self.xPathExpressionGetXPath(xmlPath + "/*", index)
 
     def createElementNS(self, xmlPath, elementName, uri) -> str:
         """Create an element using namespace and return its path"""
@@ -91,12 +93,7 @@ class ExpandedTixi(Tixi3):
     def createElementNSAtIndex(self, xmlPath, elementName, index, uri) -> str:
         """Create an element at given index using namespace and return its path"""
         super().createElementNSAtIndex(xmlPath, elementName, index, uri)
-        newElementName = "{}:{}".format(uri, elementName)
-        n = 0
-        for i in range(index):
-            if self.getChildNodeName(xmlPath, i + 1) == newElementName:
-                n += 1
-        return "{}/{}[{}]".format(xmlPath, newElementName, n)
+        return self.xPathExpressionGetXPath(xmlPath + "/*", index)
 
     def addTextElement(self, xmlPath, elementName, text) -> str:
         """Create a text element and return its path"""
@@ -132,6 +129,7 @@ class ExpandedTixi(Tixi3):
                 raise e
             return None
 
+    #
     def getInheritedTextAttribute(self, xmlPath, attrName) -> typing.Union[str, None]:
         """Find the "youngest" parent - or self that has the required attribute and return the attribute value
            If none of the parent elements has the required attribute, return None
@@ -142,6 +140,7 @@ class ExpandedTixi(Tixi3):
             return self.getTextAttribute(path, attrName)
         return None
 
+    #
     def clearComments(self):
         """Remove all comment nodes from tixi"""
         cmt = "//comment()"
