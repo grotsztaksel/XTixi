@@ -11,10 +11,16 @@ __all__ = ["ExpandedTixi"]
 
 import re
 import typing
-
-from tixi3wrapper import ReturnCode
-from tixi3wrapper import Tixi3
-from tixi3wrapper import Tixi3Exception
+try:
+    # If Tixi path is specified in PYTHONPATH
+    from tixi3wrapper import ReturnCode
+    from tixi3wrapper import Tixi3
+    from tixi3wrapper import Tixi3Exception
+except ImportError:
+    # This usually works in Anaconda environment
+    from tixi3.tixi3wrapper import ReturnCode
+    from tixi3.tixi3wrapper import Tixi3
+    from tixi3.tixi3wrapper import Tixi3Exception
 
 
 class ExpandedTixi(Tixi3):

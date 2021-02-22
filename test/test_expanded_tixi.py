@@ -11,8 +11,14 @@ __date__ = '2020-11-24'
 import re
 import unittest
 
-from tixi3wrapper import ReturnCode
-from tixi3wrapper import Tixi3Exception
+try:
+    # If Tixi path is specified in PYTHONPATH
+    from tixi3wrapper import ReturnCode
+    from tixi3wrapper import Tixi3Exception
+except ImportError:
+    # This usually works in Anaconda environment
+    from tixi3.tixi3wrapper import ReturnCode
+    from tixi3.tixi3wrapper import Tixi3Exception
 
 from xtixi.expanded_tixi import ExpandedTixi
 
