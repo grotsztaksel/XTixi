@@ -9,8 +9,6 @@ __authors__ = ['Piotr Gradkowski <grotsztaksel@o2.pl>']
 __date__ = '2020-11-24'
 __all__ = ["ExpandedTixi"]
 
-import re
-import typing
 try:
     # If Tixi path is specified in PYTHONPATH
     from tixi3wrapper import ReturnCode
@@ -22,6 +20,7 @@ except ImportError:
     from tixi3.tixi3wrapper import Tixi3
     from tixi3.tixi3wrapper import Tixi3Exception
 
+import typing
 
 class ExpandedTixi(Tixi3):
     """A class providing some expanded functionalities to the tixi wrapper"""
@@ -46,24 +45,38 @@ class ExpandedTixi(Tixi3):
                 range(self.xPathEvaluateNodeNumber(xPathExpr))]
 
     #
+    def getAttributes(self, element_path) -> typing.Dict[str, str]:
+        """
+        Return a list of all attributes of a given element
+        :param element_path: XML path of the element
+        :return: dict with attribute names as keys and their values as values
+        """
+        attributes = dict()
+        for i in range(self.getNumberOfAttributes(element_path)):
+            attrName = self.getAttributeName(element_path, i + 1)
+            attrValue = self.getTextAttribute(element_path, attrName)
+            attributes[attrName] = attrValue
+        return attributes
+
+    #
     @staticmethod
-    def parent(xmlPath):
+    def parent(xmlPath) -> str:
         """Return the parent of the input xmlPath"""
         return xmlPath.rsplit("/", 1)[0]
 
     #
     @staticmethod
-    def elementName(xmlPath):
+    def elementName(xmlPath) -> str:
         return ExpandedTixi.uniqueElementName(xmlPath).split("[")[0]
 
     #
     @staticmethod
-    def uniqueElementName(xmlPath):
+    def uniqueElementName(xmlPath) -> str:
         return xmlPath.rsplit("/", 1)[1]
 
     #
     @staticmethod
-    def elementNumber(xmlPath):
+    def elementNumber(xmlPath) -> int:
         elementNumberString = ExpandedTixi.uniqueElementName(xmlPath).split("[")
         if len(elementNumberString) > 1:
             return int(elementNumberString[1].rstrip("]"))
@@ -71,7 +84,7 @@ class ExpandedTixi(Tixi3):
             return 1
 
     #
-    def elementRow(self, xmlPath):
+    def elementRow(self, xmlPath) -> int:
         """Return the sequential number of the given element in its parent's tree"""
         return self.xPathExpressionGetAllXPaths(self.parent(xmlPath) + "/*").index(xmlPath) + 1
 

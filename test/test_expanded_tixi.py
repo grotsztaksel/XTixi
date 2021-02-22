@@ -82,6 +82,10 @@ class TestExpandedTixi(unittest.TestCase):
 
         self.assertEqual([], self.tixi.xPathExpressionGetAllXPaths("//node_3/node_9"))
 
+    def test_getAttributes(self):
+        self.assertEqual({"attr": "foo", "name": "bar"}, self.tixi.getAttributes('/root/child_2[1]'))
+        self.assertEqual({}, self.tixi.getAttributes('/root/child_1[1]'))
+
     def test_parent(self):
         self.assertEqual('/root/child_2[1]/child_2[1]/node_3[1]',
                          self.tixi.parent(
