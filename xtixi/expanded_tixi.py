@@ -20,7 +20,9 @@ except ImportError:
     from tixi3.tixi3wrapper import Tixi3
     from tixi3.tixi3wrapper import Tixi3Exception
 
+import re
 import typing
+
 
 class ExpandedTixi(Tixi3):
     """A class providing some expanded functionalities to the tixi wrapper"""
@@ -109,6 +111,7 @@ class ExpandedTixi(Tixi3):
         super().createElementNSAtIndex(xmlPath, elementName, index, uri)
         return self.xPathExpressionGetXPath(xmlPath + "/*", index)
 
+    #
     def getUnknownNSelementPath(self, path, processed_path=None, elements=None):
         """ Carve the way down to an element, without knowing the namespace URI or having the namespace
         registered/declared.
@@ -164,6 +167,63 @@ class ExpandedTixi(Tixi3):
             processed_path = ""
         processed_path = "{}/*[{}]".format(processed_path, I)
         return self.getUnknownNSelementPath(path, processed_path, elements[1:])
+
+    #
+    def getURI(self, path):
+        """
+        Get URI of the element in path.
+        :param path: Path to the element of interest
+        :return: None, or a tuple of:
+                - path to the ancestor (or self) of the element, on which the youngest URI is defined.
+                - URI string
+        """
+
+        # First, create a working copy of own XML structure
+        tmp_tixi = ExpandedTixi()
+        tmp_tixi.openString(re.sub("\s+<", "<", self.exportDocumentAsString()))
+        tmp_tixi.clearComments()
+        path_local = tmp_tixi.getUnknownNSelementPath(path)
+
+        # Now, on that copy, remove all elements that do not belong to the element branch
+        elem_chain = path_local.split("/")[1:]
+        chain_path = "/"
+        for i in range(len(elem_chain)):
+            # This path doesn't matter - it's the number that does
+            next_elem = "/" + elem_chain[i]
+            num = ExpandedTixi.elementNumber(next_elem)
+            for j in range(1, tmp_tixi.getNumberOfChilds(chain_path) + 1):
+                if j < num:
+                    tmp_tixi.removeElement(chain_path + "/*[1]")
+                elif j == num:
+                    # This element is a part of the path. Do nothing
+                    pass
+                elif j > num:
+                    tmp_tixi.removeElement(chain_path + "/*[2]")
+            if chain_path == "/":
+                chain_path = ""
+            chain_path += "/*[1]"
+
+        # And now get rid of all children of the element
+        for j in range(1, tmp_tixi.getNumberOfChilds(chain_path) + 1):
+            tmp_tixi.removeElement(chain_path + "/*[1]")
+
+        # Now we should only have a cascade of single nodes. Get the list of opening tags
+        xml_tags = re.findall(r"<[^/\?]\S+.*?[^\?]>", tmp_tixi.exportDocumentAsString())
+
+        elements = path.split("/")
+        assert len(xml_tags) == len(elements[1:])
+
+        # Look for an xmlns attribute (looking backwards, will yield the youngest one first)
+        xmlns = re.compile(r'xmlns=[\'\"](\S+)[\'\"]')
+        for tag in reversed(xml_tags):
+            m = xmlns.search(tag)
+            if not m:
+                xml_tags.pop(-1)
+                continue
+            uri = m.groups(0)[0]
+            path_out = "/".join(elements[:len(xml_tags) + 1])
+            return path_out, uri
+        return None, None
 
     #
     def addTextElement(self, xmlPath, elementName, text) -> str:

@@ -154,6 +154,43 @@ class TestExpandedTixi(unittest.TestCase):
         except Tixi3Exception as e:
             self.assertEqual(ReturnCode.INVALID_XPATH, e.code)
 
+    def test_getURI(self):
+        # First, set some namespaces
+
+        uri1 = "http://www.test_uri1"
+        uri2 = "http://www.test_uri2"
+        # This is needed only to effectively set namespaces
+        self.tixi.registerNamespace(uri1, "u_test1")
+        self.tixi.registerNamespace(uri2, "u_test2")
+
+        self.tixi.setElementNamespace("/root/child_2[1]/child_2[1]/node_3[1]/node_4[2]", uri2, None)
+        self.tixi.setElementNamespace("/root/child_2[1]", uri1, None)
+
+        uri1_path, uri1 = self.tixi.getURI("/root/child_2[1]/child_2[1]")
+        uri2_path, uri2 = self.tixi.getURI("/root/child_2[1]/child_2[1]/node_3[1]/node_4[2]")
+        uri3_path, uri3 = self.tixi.getURI('/root/child_2[2]/node_3/node_4[2]')
+
+        # Test the function
+        self.assertEqual(("/root/child_2[1]", "http://www.test_uri1"), (uri1_path, uri1))
+        self.assertEqual(("/root/child_2[1]/child_2[1]/node_3[1]/node_4[2]", "http://www.test_uri2"),
+                         (uri2_path, uri2))
+        self.assertEqual((None, None), (uri3_path, uri3))
+
+        # try accessing the nodes
+        self.tixi.registerNamespace(uri1, "u1")
+        self.tixi.registerNamespace(uri2, "u2")
+
+        self.assertTrue(self.tixi.checkElement("/root"))
+        self.assertTrue(self.tixi.checkElement("/root/u1:child_2[1]"))
+        self.assertTrue(self.tixi.checkElement("/root/u_test1:child_2[1]"))
+        self.assertTrue(self.tixi.checkElement("/root/u1:child_2[1]/child_2[1]"))
+        self.assertTrue(self.tixi.checkElement("/root/u1:child_2[1]/child_2[1]/node_3[1]"))
+        # There's only one node_4 in namespace u2
+        self.assertTrue(self.tixi.checkElement("/root/u1:child_2[1]/child_2[1]/node_3[1]/u2:node_4[1]"))
+        self.assertEqual("foo", self.tixi.getTextAttribute("/root/u1:child_2[1]", "attr"))
+        self.assertEqual("good",
+                         self.tixi.getTextAttribute("/root/u1:child_2[1]/child_2[1]/node_3[1]/u2:node_4[1]", "attr"))
+
     def test_addTextElement(self):
         path = self.tixi.addTextElement("/root/child_2[1]", "node_9", "text of the node")
         self.assertEqual("/root/child_2[1]/node_9", path)
