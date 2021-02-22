@@ -9,7 +9,10 @@ __authors__ = ['Piotr Gradkowski <grotsztaksel@o2.pl>']
 __date__ = '2020-11-24'
 
 import re
+import sys
 import unittest
+
+sys.path.append("..")
 
 try:
     # If Tixi path is specified in PYTHONPATH
@@ -20,7 +23,7 @@ except ImportError:
     from tixi3.tixi3wrapper import ReturnCode
     from tixi3.tixi3wrapper import Tixi3Exception
 
-from xtixi.expanded_tixi import ExpandedTixi
+from xtixi import Tixi
 
 TEST_XML = """<?xml version="1.0"?>
               <root>
@@ -60,7 +63,7 @@ TEST_XML = """<?xml version="1.0"?>
 
 class TestExpandedTixi(unittest.TestCase):
     def setUp(self):
-        self.tixi = ExpandedTixi()
+        self.tixi = Tixi()
         # Need to get rid of leading spaces, otherwise they are treated as element #text
         string = re.sub("\s+<", "<", TEST_XML)
         self.tixi.openString(string)
