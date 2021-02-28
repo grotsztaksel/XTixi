@@ -17,11 +17,11 @@ sys.path.append("..")
 try:
     # If Tixi path is specified in PYTHONPATH
     from tixi3wrapper import ReturnCode
-    from tixi3wrapper import Tixi3Exception
+    from tixi3wrapper import Tixi3Exception as TixiException
 except ImportError:
     # This usually works in Anaconda environment
     from tixi3.tixi3wrapper import ReturnCode
-    from tixi3.tixi3wrapper import Tixi3Exception
+    from tixi3.tixi3wrapper import Tixi3Exception as TixiException
 
 from xtixi import Tixi
 
@@ -142,19 +142,19 @@ class TestExpandedTixi(unittest.TestCase):
         try:
             path = self.tixi.getUnknownNSelementPath("/root/child_2[1]/child_2[1]/node_3[5]")
             self.assertFalse(True, "Should have thrown TixiException!")
-        except Tixi3Exception as e:
+        except TixiException as e:
             self.assertEqual(ReturnCode.ELEMENT_NOT_FOUND, e.code)
 
         try:
             path = self.tixi.getUnknownNSelementPath("/root/child_2/child_2[1]/node_3[5]")
             self.assertFalse(True, "Should have thrown TixiException!")
-        except Tixi3Exception as e:
+        except TixiException as e:
             self.assertEqual(ReturnCode.ELEMENT_PATH_NOT_UNIQUE, e.code)
 
         try:
             path = self.tixi.getUnknownNSelementPath("blah!")
             self.assertFalse(True, "Should have thrown TixiException!")
-        except Tixi3Exception as e:
+        except TixiException as e:
             self.assertEqual(ReturnCode.INVALID_XPATH, e.code)
 
     def test_getURI(self):
