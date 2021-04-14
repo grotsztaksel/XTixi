@@ -241,20 +241,10 @@ class ExpandedTixi(Tixi3):
            If none of the parent elements has the required attribute, return empty string
         """
 
-        if self.checkAttribute(xmlPath, attrName):
-            return xmlPath
-
-        path = xmlPath
-        while path and not self.checkAttribute(path, attrName):
-            path = self.parent(path)
-        if not path:
-            return None
-        return path
-
-        # XPath approach does not return expected results. A bug in Tixi3?
-        xpath = "{}[ancestor-or-self::*[@{}]]".format(xmlPath, attrName)
+        xpath = "{}/ancestor-or-self::*[@{}]".format(xmlPath, attrName)
         try:
-            return self.xPathExpressionGetXPath(xpath, 1)
+
+            return self.xPathExpressionGetXPath(xpath, self.xPathEvaluateNodeNumber(xpath))
         except Tixi3Exception as e:
             if e.code != ReturnCode.FAILED:
                 raise e
