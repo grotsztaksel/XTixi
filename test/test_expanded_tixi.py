@@ -105,6 +105,19 @@ class TestExpandedTixi(unittest.TestCase):
         self.assertEqual("/root/child_2[1]/node_9", path)
         self.assertTrue(self.tixi.checkElement("/root/child_2[1]/node_9"))
 
+    def test_xPath_by_attributeNamespace(self):
+        """This test check the basic tixi functionality - not the extended tixi
+        whether it can evaluate XPath expressions containing [namespace-uri()="..."]
+        """
+
+        uri = "http://some/fake/uri"
+        self.tixi.declareNamespace("/root", uri, "nns")
+
+        self.tixi.addTextAttribute('/root/child_2[1]/node_3/node_4', "nns:attr", "some namespace value")
+        xpath = '//*[@*[namespace-uri()="{}"]]'.format(uri)
+
+        self.assertEqual(['/root/child_2[1]/node_3/node_4'], self.tixi.xPathExpressionGetAllXPaths(xpath))
+
     def test_getUnknownNSelementPath(self):
         path = "/root/child_2[2]/node_3/node_4[2]"
         self.assertEqual("/*[1]/*[3]/*[1]/*[2]", self.tixi.getUnknownNSelementPath(path))
