@@ -51,9 +51,11 @@ TEST_XML = """<?xml version="1.0"?>
                       </node_3>
                   </child_2>
                   <child_2>
+                      <!-- extra comment -->
                       <node_3>
                           <node_4/>
                           <node_4/>
+                          <!-- another comment -->
                           <node_5/>
                       </node_3>
                   </child_2>
@@ -275,9 +277,15 @@ class TestExpandedTixi(unittest.TestCase):
         self.assertIsNone(self.tixi.getInheritedTextAttribute("/root/child_1/child", "attr"))
 
     def test_clearComments(self):
-        self.assertEqual("#comment", self.tixi.getChildNodeName("/root/child_2[1]/child_2[1]/node_3[1]", 2))
+        paths = ["/root/child_2[1]/child_2[1]/node_3[1]",
+                            "/root/child_2[2]","/root/child_2[2]/node_3"
+                            ]
+        nums = [2,1,3]
+        for path, i in zip(paths, nums):
+            self.assertEqual("#comment", self.tixi.getChildNodeName(path, i))
         self.tixi.clearComments()
-        self.assertNotEqual("#comment", self.tixi.getChildNodeName("/root/child_2[1]/child_2[1]/node_3[1]", 2))
+        for path, i in zip(paths, nums):
+            self.assertNotEqual("#comment", self.tixi.getChildNodeName(path, i))
         self.assertEqual([], self.tixi.xPathExpressionGetAllXPaths("//comment()"))
 
 

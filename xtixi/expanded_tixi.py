@@ -265,5 +265,5 @@ class ExpandedTixi(Tixi3):
     def clearComments(self):
         """Remove all comment nodes from tixi"""
         cmt = "//comment()"
-        for path in self.xPathExpressionGetAllXPaths(cmt):
+        for path in reversed(self.xPathExpressionGetAllXPaths(cmt)):
             self.removeElement(path)
